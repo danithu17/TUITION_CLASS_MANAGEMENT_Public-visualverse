@@ -126,11 +126,21 @@
               <q-card class="card-advanced q-pa-none overflow-hidden q-mb-xl">
                 <q-card-section class="row items-center justify-between q-px-lg q-py-md border-bottom-subtle">
                   <div class="text-h6 text-weight-bold text-white">Academic Sector Hub</div>
-                  <q-btn unelevated color="primary" label="Initialize Sector" icon="add" @click="showClassModal = true" class="btn-premium" />
+                  <q-btn unelevated color="primary" label="Initialize Sector" icon="add" @click="openClassModalForCreate" class="btn-premium" />
                 </q-card-section>
                 <q-card-section class="q-pa-none">
                   <q-table :rows="allClasses" :columns="classColumns" dark flat class="bg-transparent" :loading="loading">
-                    <template v-slot:no-data>
+                  <template v-slot:body-cell-actions="props">
+                    <q-td :props="props" class="text-right q-gutter-x-xs">
+                      <q-btn flat round color="cyan" icon="edit" size="sm" @click="editClass(props.row)">
+                        <q-tooltip>Recalibrate Sector</q-tooltip>
+                      </q-btn>
+                      <q-btn flat round color="negative" icon="delete" size="sm" @click="deleteClass(props.row)">
+                        <q-tooltip>Decommission Sector</q-tooltip>
+                      </q-btn>
+                    </q-td>
+                  </template>
+                  <template v-slot:no-data>
                       <div class="full-width row flex-center text-grey-6 q-gutter-sm q-pa-lg">
                         <q-icon size="2em" name="rocket_launch" />
                         <span>No sectors identified in this quadrant.</span>
@@ -241,8 +251,8 @@
     <q-dialog v-model="showClassModal" backdrop-filter="blur(10px)">
       <q-card class="bg-glass-ultra text-white border-glow-premium q-pa-lg" style="min-width: 450px; border-radius: 28px">
         <q-card-section class="q-pb-none">
-          <div class="text-h5 text-weight-bolder text-gradient">Initialize Fleet</div>
-          <div class="text-caption text-grey-5">Deploy a new educational sector to the galaxy.</div>
+          <div class="text-h5 text-weight-bolder text-gradient">{{ newClass.id ? 'Recalibrate Sector' : 'Initialize Fleet' }}</div>
+          <div class="text-caption text-grey-5">{{ newClass.id ? 'Modify existing coordinate parameters.' : 'Deploy a new educational sector to the galaxy.' }}</div>
         </q-card-section>
 
         <q-card-section class="q-gutter-y-lg q-pt-xl">
@@ -263,8 +273,8 @@
         </q-card-section>
 
         <q-card-actions align="right" class="q-pt-lg">
-          <q-btn flat label="Abort Mission" color="grey-5" v-close-popup no-caps />
-          <q-btn unelevated label="Deploy Sector" color="primary" @click="createClass" :loading="loading" class="btn-modern q-px-lg" />
+          <q-btn flat label="Abort" color="grey-5" v-close-popup no-caps />
+          <q-btn unelevated :label="newClass.id ? 'Update Sector' : 'Deploy Sector'" color="primary" @click="createClass" :loading="loading" class="btn-modern q-px-lg" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -402,24 +412,66 @@ async function fetchEnrollments() {
   if (!error) myEnrollments.value = data
 }
 
+function openClassModalForCreate() {
+  newClass.value = { name: '', description: '', teacher_id: null }
+  showClassModal.value = true
+}
+
 async function createClass() {
   if (!newClass.value.name) return
   loading.value = true
-  const { error } = await supabase.from('classes').insert([newClass.value])
-  if (!error) {
+
+  let result
+  if (newClass.value.id) {
+    // Update existing
+    result = await supabase.from('classes').update({
+      name: newClass.value.name,
+      description: newClass.value.description,
+      teacher_id: newClass.value.teacher_id
+    }).eq('id', newClass.value.id)
+  } else {
+    // Insert new
+    result = await supabase.from('classes').insert([newClass.value])
+  }
+
+  if (!result.error) {
     showClassModal.value = false
     newClass.value = { name: '', description: '', teacher_id: null }
-    await fetchData() // Refresh everything
+    await fetchClasses()
     $q.notify({
       color: 'positive',
-      message: 'New Class Deployed Successfully!',
-      icon: 'rocket_launch',
-      badgeStyle: 'background-color: #06b6d4'
+      message: result.status === 204 ? 'Sector Parameters Updated' : 'New Class Deployed Successfully!',
+      icon: result.status === 204 ? 'sync_alt' : 'rocket_launch'
     })
   } else {
-    $q.notify({ color: 'negative', message: 'Deployment failed: ' + error.message })
+    $q.notify({ color: 'negative', message: 'Operation failed: ' + result.error.message })
   }
   loading.value = false
+}
+
+function editClass(cls) {
+  newClass.value = { ...cls, teacher_id: cls.teacher_id }
+  showClassModal.value = true
+}
+
+async function deleteClass(cls) {
+  $q.dialog({
+    title: 'Decommission Sector',
+    message: `Are you sure you want to shut down the ${cls.name} sector? All associated coordinate data will be lost.`,
+    dark: true,
+    cancel: { flat: true, color: 'grey-5', label: 'Abort' },
+    ok: { unelevated: true, color: 'negative', label: 'Shutdown' }
+  }).onOk(async () => {
+    loading.value = true
+    const { error } = await supabase.from('classes').delete().eq('id', cls.id)
+    if (!error) {
+      $q.notify({ color: 'warning', message: 'Sector decommissioned.', icon: 'offline_bolt' })
+      await fetchClasses()
+    } else {
+      $q.notify({ color: 'negative', message: 'Shutdown failed: ' + error.message })
+    }
+    loading.value = false
+  })
 }
 
 async function enrollStudent() {
@@ -521,7 +573,8 @@ const userColumns = [
 const classColumns = [
   { name: 'name', label: 'CLASS NAME', field: 'name', align: 'left' },
   { name: 'teacher', label: 'ASSIGNED TEACHER', field: row => row.profiles?.full_name || 'Unassigned', align: 'left' },
-  { name: 'created_at', label: 'DEPLOYED', field: row => new Date(row.created_at).toLocaleDateString(), align: 'right' }
+  { name: 'created_at', label: 'DEPLOYED', field: row => new Date(row.created_at).toLocaleDateString(), align: 'center' },
+  { name: 'actions', label: '', align: 'right' }
 ]
 
 const enrollmentColumns = [
