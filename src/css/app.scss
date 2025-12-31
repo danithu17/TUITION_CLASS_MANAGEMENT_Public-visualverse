@@ -1,1 +1,219 @@
 // app global css in SCSS form
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary-glow: conic-gradient(from 180deg at 50% 50%, #16abff 0deg, #0885ff 55deg, #54d0ff 120deg, #0071ff 160deg, transparent 360deg);
+  --secondary-glow: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: #020617;
+  color: #f8fafc;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+// Advanced Mesh Background
+.mesh-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: var(--primary-glow);
+    filter: blur(100px);
+    opacity: 0.15;
+    animation: rotate 20s linear infinite;
+    top: -25%;
+    left: -25%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity: 0.05;
+    pointer-events: none;
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #00f2fe 0%, #4facfe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.3));
+}
+
+.bg-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-glass-dark {
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &.q-header--hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(5px);
+  &:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+.card-advanced {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+    transition: 0.5s;
+  }
+  
+  &:hover {
+    transform: translateY(-15px);
+    border-color: rgba(6, 182, 212, 0.4);
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8), 
+                0 0 30px rgba(6, 182, 212, 0.15);
+    background: rgba(15, 23, 42, 0.4);
+
+    &::before {
+      left: 100%;
+    }
+  }
+}
+
+.btn-modern {
+  border-radius: 16px;
+  text-transform: none;
+  font-weight: 800;
+  padding: 12px 32px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &.q-btn--outline {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.q-btn--unelevated:not(.q-btn--outline) {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    box-shadow: 0 10px 20px -10px rgba(6, 182, 212, 0.5);
+    &:hover {
+      box-shadow: 0 15px 30px -10px rgba(6, 182, 212, 0.6);
+      transform: translateY(-3px) scale(1.02);
+    }
+  }
+}
+
+// Global Glassmorphism & Premium UI Tokens
+.bg-glass-ultra {
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 28px !important;
+}
+
+.border-glow-premium {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05),
+              0 20px 50px rgba(0, 0, 0, 0.5),
+              inset 0 0 20px rgba(255, 255, 255, 0.02) !important;
+}
+
+.premium-input-glass {
+  .q-field__control {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 16px !important;
+    transition: all 0.3s ease;
+    &::before {
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    &:hover::before {
+      border-color: rgba(6, 182, 212, 0.4) !important;
+    }
+  }
+  &.q-field--focused .q-field__control {
+    background: rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+  }
+}
+
+// Auth & Modal Input Groups
+.auth-input-group {
+  margin-bottom: 4px;
+  .input-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    font-weight: 600;
+  }
+}
+
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+}
