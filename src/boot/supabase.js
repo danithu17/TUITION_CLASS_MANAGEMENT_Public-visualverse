@@ -4,7 +4,17 @@ import { boot } from 'quasar/wrappers'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Nebula Core Critical Error: Supabase credentials missing!')
+  console.warn(
+    'Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.',
+  )
+}
+
+const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder',
+)
 
 export default boot(({ app }) => {
   app.config.globalProperties.$supabase = supabase
