@@ -261,6 +261,17 @@
                     <template v-slot:body-cell-actions="props">
                       <q-td :props="props" class="text-right">
                         <q-btn
+                          flat
+                          round
+                          color="primary"
+                          icon="visibility"
+                          size="sm"
+                          @click="openUserDetail(props.row)"
+                          class="q-mr-sm"
+                        >
+                          <q-tooltip>View Detailed Intel</q-tooltip>
+                        </q-btn>
+                        <q-btn
                           v-if="props.row.id !== user.id"
                           flat
                           round
@@ -354,15 +365,29 @@
                       <div class="text-caption text-grey-5 q-mb-lg" style="min-height: 40px">
                         {{ cls.description || 'No mission briefing available.' }}
                       </div>
-                      <q-btn
-                        flat
-                        no-caps
-                        label="Sync Attendance"
-                        icon="fact_check"
-                        color="cyan"
-                        class="full-width rounded-borders-12"
-                        @click="markAttendance(cls.name)"
-                      />
+                      <div class="row q-gutter-x-sm">
+                        <q-btn
+                          class="col rounded-borders-12 glass-btn-dashboard"
+                          flat
+                          no-caps
+                          label="Logs"
+                          icon="fact_check"
+                          color="cyan"
+                          @click="openAttendanceLogger(cls)"
+                        />
+                        <q-btn
+                          class="col rounded-borders-12 glass-btn-dashboard"
+                          flat
+                          no-caps
+                          label="Files"
+                          icon="folder_zip"
+                          color="purple"
+                          @click="
+                            newResource.class_id = cls.id
+                            showResourceModal = true
+                          "
+                        />
+                      </div>
                     </q-card>
                   </div>
                   <div
@@ -404,8 +429,80 @@
                   </q-table>
                 </q-card-section>
               </q-card>
+
+              <!-- Attendance History for Students -->
+              <q-card class="card-advanced q-pa-none overflow-hidden q-mb-xl">
+                <q-card-section class="q-px-lg q-py-md border-bottom-subtle">
+                  <div class="text-h6 text-weight-bold text-white">Attendance History</div>
+                </q-card-section>
+                <q-card-section class="q-pa-md">
+                  <div v-if="attendanceLogs.length > 0" class="row q-col-gutter-sm">
+                    <div
+                      v-for="log in attendanceLogs"
+                      :key="log.id"
+                      class="col-12 col-sm-6 col-md-4"
+                    >
+                      <q-item class="glass-btn-dashboard rounded-borders-12">
+                        <q-item-section avatar>
+                          <q-icon
+                            :name="log.status === 'present' ? 'check_circle' : 'cancel'"
+                            :color="log.status === 'present' ? 'positive' : 'negative'"
+                          />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label class="text-weight-bold">{{
+                            log.classes?.name
+                          }}</q-item-label>
+                          <q-item-label caption class="text-grey-5">{{ log.date }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </div>
+                  </div>
+                  <div v-else class="text-center text-grey-6 q-pa-lg">No logs recorded yet.</div>
+                </q-card-section>
+              </q-card>
             </div>
           </template>
+
+          <!-- Shared Resources Control (Visible to all) -->
+          <div class="col-12 animate-fade-up">
+            <q-card class="card-advanced q-pa-none overflow-hidden q-mb-xl">
+              <q-card-section
+                class="row items-center justify-between q-px-lg q-py-md border-bottom-subtle"
+              >
+                <div class="text-h6 text-weight-bold text-white row items-center">
+                  <q-icon name="cloud_queue" color="purple" class="q-mr-sm" />
+                  Hub Data Bank (Resources)
+                </div>
+              </q-card-section>
+              <q-card-section class="q-pa-md">
+                <div v-if="resources.length > 0" class="row q-col-gutter-md">
+                  <div v-for="res in resources" :key="res.id" class="col-12 col-sm-6 col-md-4">
+                    <a :href="res.file_url" target="_blank" class="text-decoration-none">
+                      <q-card
+                        class="glass-btn-dashboard q-pa-md border-glow-subtle hover-scale cursor-pointer"
+                      >
+                        <div class="row items-center no-wrap">
+                          <q-icon name="description" color="purple" size="sm" class="q-mr-sm" />
+                          <div class="ellipsis text-weight-bold text-white">{{ res.title }}</div>
+                        </div>
+                        <div class="text-caption text-grey-5 q-mt-xs">
+                          Sector: {{ res.classes?.name }}
+                        </div>
+                        <div class="text-caption text-grey-6 text-uppercase" style="font-size: 8px">
+                          Uploader: {{ res.profiles?.full_name }}
+                        </div>
+                      </q-card>
+                    </a>
+                  </div>
+                </div>
+                <div v-else class="text-center text-grey-6 q-pa-xl">
+                  <q-icon name="folder_off" size="48px" class="q-mb-sm opacity-03" />
+                  <div>The Data Bank is currently empty.</div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
           <!-- Core System Logs (Universal) -->
           <div class="col-12 col-md-8 animate-fade-up" style="animation-delay: 0.5s">
@@ -631,6 +728,151 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Resource Upload Modal -->
+    <q-dialog v-model="showResourceModal" backdrop-filter="blur(10px)">
+      <q-card
+        class="bg-glass-ultra text-white border-glow-premium q-pa-lg"
+        style="min-width: 450px; border-radius: 28px"
+      >
+        <q-card-section>
+          <div class="text-h5 text-weight-bolder text-gradient">Share Resource</div>
+          <div class="text-caption text-grey-5">Provide access to academic repositories.</div>
+        </q-card-section>
+        <q-card-section class="q-gutter-y-lg">
+          <div class="auth-input-group">
+            <span class="input-label">Resource Title</span>
+            <q-input
+              v-model="newResource.title"
+              placeholder="e.g. Lecture Slides 01"
+              dark
+              outlined
+              dense
+              class="premium-input-glass"
+            />
+          </div>
+          <div class="auth-input-group">
+            <span class="input-label">File URL / Reference</span>
+            <q-input
+              v-model="newResource.file_url"
+              placeholder="https://drive.google.com/..."
+              dark
+              outlined
+              dense
+              class="premium-input-glass"
+            />
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Back" v-close-popup no-caps color="grey-5" />
+          <q-btn
+            unelevated
+            label="Broadcast Resource"
+            color="purple"
+            @click="uploadResource"
+            :loading="loading"
+            class="btn-modern"
+            :rules="[(val) => !!val || 'Title required']"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Attendance Modal -->
+    <q-dialog v-model="showAttendanceModal" backdrop-filter="blur(10px)">
+      <q-card
+        class="bg-glass-ultra text-white border-glow-premium q-pa-lg"
+        style="min-width: 500px; border-radius: 28px"
+      >
+        <q-card-section>
+          <div class="text-h5 text-weight-bolder text-gradient">Attendance Registry</div>
+          <div class="text-caption text-grey-5">
+            Marking personnel for sector: {{ selectedAttendanceClass?.name }}
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <q-list dark separator class="bg-glass-dark rounded-borders-12 overflow-hidden">
+            <q-item v-for="(s, i) in attendanceBatch" :key="i">
+              <q-item-section>{{ s.full_name }}</q-item-section>
+              <q-item-section side>
+                <q-btn-toggle
+                  v-model="s.status"
+                  dark
+                  toggle-color="primary"
+                  flat
+                  dense
+                  :options="[
+                    { label: 'P', value: 'present' },
+                    { label: 'A', value: 'absent' },
+                    { label: 'L', value: 'late' },
+                  ]"
+                />
+              </q-item-section>
+            </q-item>
+            <q-item v-if="attendanceBatch.length === 0" class="text-center q-pa-md text-grey-6"
+              >No students enrolled in this sector.</q-item
+            >
+          </q-list>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" v-close-popup no-caps color="grey-5" />
+          <q-btn
+            unelevated
+            label="Synchronize Attendance"
+            color="cyan"
+            @click="saveAttendance"
+            :loading="loading"
+            class="btn-modern"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- User Detail / Profile Modal -->
+    <q-dialog v-model="showUserDetailModal" backdrop-filter="blur(10px)">
+      <q-card
+        class="bg-glass-ultra text-white border-glow-premium q-pa-xl"
+        style="min-width: 450px; border-radius: 28px"
+      >
+        <q-card-section class="text-center">
+          <q-avatar size="100px" class="border-glow-primary q-mb-md">
+            <q-icon name="person" color="primary" size="60px" />
+          </q-avatar>
+          <div class="text-h4 text-weight-bolder">{{ selectedUser?.full_name }}</div>
+          <q-badge color="primary" class="q-pa-sm text-uppercase letter-spacing-1 q-mt-sm">{{
+            selectedUser?.role
+          }}</q-badge>
+        </q-card-section>
+        <q-card-section class="q-gutter-y-md">
+          <div class="row items-center justify-between border-bottom-subtle q-pb-sm">
+            <span class="text-grey-5">Identity Code:</span>
+            <span class="text-weight-bold">{{ selectedUser?.id.split('-')[0] }}...</span>
+          </div>
+          <div class="row items-center justify-between border-bottom-subtle q-pb-sm">
+            <span class="text-grey-5">Hub Status:</span>
+            <span :class="selectedUser?.is_approved ? 'text-positive' : 'text-negative'">{{
+              selectedUser?.is_approved ? 'AUTHORIZED' : 'PENDING'
+            }}</span>
+          </div>
+          <div class="q-pt-md">
+            <div class="text-subtitle2 text-grey-5 q-mb-xs">Bio / Notes:</div>
+            <p class="text-body2 text-grey-3">
+              {{ selectedUser?.bio || 'No academic notes identified for this profile.' }}
+            </p>
+          </div>
+        </q-card-section>
+        <q-card-actions align="center" class="q-pt-xl">
+          <q-btn
+            flat
+            label="Close Data Link"
+            color="primary"
+            v-close-popup
+            no-caps
+            class="btn-modern q-px-xl"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -651,12 +893,21 @@ const institute = ref(null)
 const allUsers = ref([])
 const allClasses = ref([])
 const myEnrollments = ref([])
+const resources = ref([])
+const attendanceLogs = ref([])
 const loading = ref(false)
 const showClassModal = ref(false)
 const showEnrollModal = ref(false)
+const showResourceModal = ref(false)
+const showAttendanceModal = ref(false)
+const showUserDetailModal = ref(false)
 
 const newClass = ref({ name: '', description: '', teacher_id: null })
 const enrollData = ref({ student_id: null, class_id: null })
+const newResource = ref({ title: '', class_id: null, file_url: '' })
+const selectedUser = ref(null)
+const attendanceBatch = ref([])
+const selectedAttendanceClass = ref(null)
 
 async function fetchData() {
   if (!user.value) return
@@ -683,13 +934,93 @@ async function fetchData() {
 
     await fetchUsers()
     await fetchClasses()
+    await fetchResources()
 
     // For counts in stats
     if (role.value === 'student' || role.value === 'teacher') {
       await fetchEnrollments()
+      await fetchAttendance()
     }
   } catch (e) {
     console.error('Fetch Error:', e)
+  }
+  loading.value = false
+}
+
+async function fetchResources() {
+  if (!userProfile.value?.institute_id) return
+  const { data, error } = await supabase
+    .from('resources')
+    .select('*, profiles(full_name), classes(name)')
+    .eq('institute_id', userProfile.value.institute_id)
+  if (!error) resources.value = data
+}
+
+async function fetchAttendance() {
+  if (!userProfile.value?.institute_id) return
+  let query = supabase.from('attendance_logs').select('*, classes(name), profiles(full_name)')
+  if (role.value === 'student') query = query.eq('student_id', user.value.id)
+  const { data, error } = await query
+  if (!error) attendanceLogs.value = data
+}
+
+function openUserDetail(userItem) {
+  selectedUser.value = userItem
+  showUserDetailModal.value = true
+}
+
+async function uploadResource() {
+  if (!newResource.value.title || !newResource.value.class_id) return
+  loading.value = true
+  const resObj = {
+    ...newResource.value,
+    institute_id: userProfile.value.institute_id,
+    uploaded_by: user.value.id,
+  }
+  const { error } = await supabase.from('resources').insert([resObj])
+  if (!error) {
+    showResourceModal.value = false
+    fetchResources()
+    $q.notify({ color: 'positive', message: 'Resource shared with the sector.' })
+  }
+  loading.value = false
+}
+
+async function openAttendanceLogger(cls) {
+  selectedAttendanceClass.value = cls
+  loading.value = true
+  // Fetch students enrolled in THIS class
+  const { data, error } = await supabase
+    .from('enrollments')
+    .select('student_id, profiles(full_name)')
+    .eq('class_id', cls.id)
+
+  if (!error) {
+    attendanceBatch.value = data.map((e) => ({
+      student_id: e.student_id,
+      full_name: e.profiles.full_name,
+      status: 'present',
+    }))
+    showAttendanceModal.value = true
+  }
+  loading.value = false
+}
+
+async function saveAttendance() {
+  loading.value = true
+  const logs = attendanceBatch.value.map((s) => ({
+    institute_id: userProfile.value.institute_id,
+    class_id: selectedAttendanceClass.value.id,
+    student_id: s.student_id,
+    status: s.status,
+    marked_by: user.value.id,
+  }))
+
+  const { error } = await supabase.from('attendance_logs').insert(logs)
+  if (!error) {
+    showAttendanceModal.value = false
+    $q.notify({ color: 'positive', message: 'Attendance records synchronized.' })
+    fetchAttendance()
   }
   loading.value = false
 }
@@ -750,14 +1081,6 @@ function exportLogs() {
     color: 'info',
     message: 'Generating system logs for export...',
     icon: 'cloud_download',
-  })
-}
-
-function markAttendance(className) {
-  $q.notify({
-    color: 'cyan',
-    message: `Attendance session opened for ${className}`,
-    icon: 'how_to_reg',
   })
 }
 
