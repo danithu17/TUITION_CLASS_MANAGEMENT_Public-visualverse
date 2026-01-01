@@ -354,10 +354,14 @@
             <div class="col-12 animate-fade-up">
               <q-card class="card-advanced q-pa-none overflow-hidden q-mb-xl">
                 <q-card-section class="q-px-lg q-py-md border-bottom-subtle">
-                  <div class="text-h6 text-weight-bold text-white">Academic Assignments</div>
+                  <div class="text-h6 text-weight-bold text-white">My Academic Assignments</div>
                 </q-card-section>
                 <q-card-section class="q-pa-lg row q-col-gutter-lg">
-                  <div v-for="cls in allClasses" :key="cls.id" class="col-12 col-sm-6 col-md-4">
+                  <div
+                    v-for="cls in myTeachingClasses"
+                    :key="cls.id"
+                    class="col-12 col-sm-6 col-md-4"
+                  >
                     <q-card class="glass-btn-dashboard q-pa-lg border-glow-premium hover-scale">
                       <div class="text-h6 text-primary text-weight-bold q-mb-xs">
                         {{ cls.name }}
@@ -391,7 +395,7 @@
                     </q-card>
                   </div>
                   <div
-                    v-if="allClasses.length === 0"
+                    v-if="myTeachingClasses.length === 0"
                     class="col-12 text-center text-grey-6 q-pa-xl"
                   >
                     <q-icon name="upcoming" size="64px" class="q-mb-md opacity-03" />
@@ -464,7 +468,7 @@
             </div>
           </template>
 
-          <!-- Shared Resources Control (Visible to all) -->
+          <!-- Shared Resources Control (Scoped) -->
           <div class="col-12 animate-fade-up">
             <q-card class="card-advanced q-pa-none overflow-hidden q-mb-xl">
               <q-card-section
@@ -472,12 +476,16 @@
               >
                 <div class="text-h6 text-weight-bold text-white row items-center">
                   <q-icon name="cloud_queue" color="purple" class="q-mr-sm" />
-                  Hub Data Bank (Resources)
+                  {{ role === 'student' ? 'My Course Materials' : 'Hub Data Bank (Resources)' }}
                 </div>
               </q-card-section>
               <q-card-section class="q-pa-md">
-                <div v-if="resources.length > 0" class="row q-col-gutter-md">
-                  <div v-for="res in resources" :key="res.id" class="col-12 col-sm-6 col-md-4">
+                <div v-if="myEnrolledResources.length > 0" class="row q-col-gutter-md">
+                  <div
+                    v-for="res in myEnrolledResources"
+                    :key="res.id"
+                    class="col-12 col-sm-6 col-md-4"
+                  >
                     <a :href="res.file_url" target="_blank" class="text-decoration-none">
                       <q-card
                         class="glass-btn-dashboard q-pa-md border-glow-subtle hover-scale cursor-pointer"
@@ -498,7 +506,13 @@
                 </div>
                 <div v-else class="text-center text-grey-6 q-pa-xl">
                   <q-icon name="folder_off" size="48px" class="q-mb-sm opacity-03" />
-                  <div>The Data Bank is currently empty.</div>
+                  <div>
+                    {{
+                      role === 'student'
+                        ? 'No materials shared for your courses yet.'
+                        : 'The Data Bank is currently empty.'
+                    }}
+                  </div>
                 </div>
               </q-card-section>
             </q-card>
@@ -1338,6 +1352,20 @@ const studentOptions = computed(() =>
     .map((u) => ({ label: u.full_name, value: u.id })),
 )
 const classOptions = computed(() => allClasses.value.map((c) => ({ label: c.name, value: c.id })))
+
+// Role-specific data lists
+const myTeachingClasses = computed(() =>
+  allClasses.value.filter((c) => c.teacher_id === user.value?.id),
+)
+const myEnrolledResources = computed(() => {
+  if (role.value === 'admin') return resources.value
+  if (role.value === 'teacher') {
+    return resources.value.filter((r) => myTeachingClasses.value.some((c) => c.id === r.class_id))
+  }
+  // For students, filter by their enrollment
+  const enrolledClassIds = myEnrollments.value.map((e) => e.class_id)
+  return resources.value.filter((r) => enrolledClassIds.includes(r.class_id))
+})
 
 onMounted(async () => {
   const {
