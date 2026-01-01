@@ -32,7 +32,33 @@
             <p class="text-grey-5 q-mt-sm">Join the next generation of interstellar learning</p>
           </q-card-section>
 
-          <q-form @submit="handleRegister" class="q-gutter-y-lg q-mt-md">
+          <q-form @submit="handleRegister" class="q-gutter-y-md q-mt-md">
+            <!-- Registration Type Selection -->
+            <div class="row q-col-gutter-sm q-mb-md">
+              <div class="col-6">
+                <q-btn
+                  :flat="registrationType !== 'join'"
+                  :unelevated="registrationType === 'join'"
+                  :color="registrationType === 'join' ? 'primary' : 'grey-8'"
+                  label="Join Hub"
+                  class="full-width rounded-borders-12"
+                  no-caps
+                  @click="registrationType = 'join'"
+                />
+              </div>
+              <div class="col-6">
+                <q-btn
+                  :flat="registrationType !== 'create'"
+                  :unelevated="registrationType === 'create'"
+                  :color="registrationType === 'create' ? 'primary' : 'grey-8'"
+                  label="Create Hub"
+                  class="full-width rounded-borders-12"
+                  no-caps
+                  @click="registrationType = 'create'"
+                />
+              </div>
+            </div>
+
             <div class="auth-input-group">
               <span class="input-label">Full Identity (Name)</span>
               <q-input
@@ -67,6 +93,62 @@
               </q-input>
             </div>
 
+            <!-- Conditional Fields -->
+            <template v-if="registrationType === 'create'">
+              <div class="auth-input-group animate-fade-in">
+                <span class="input-label">Institute Name</span>
+                <q-input
+                  v-model="instituteName"
+                  placeholder="e.g. Nebula Academy"
+                  dark
+                  outlined
+                  dense
+                  class="premium-input-glass"
+                  :rules="[(val) => !!val || 'Institute name is required']"
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="business" color="cyan" size="20px" />
+                  </template>
+                </q-input>
+              </div>
+            </template>
+            <template v-else>
+              <div class="auth-input-group animate-fade-in">
+                <span class="input-label">Invite Code</span>
+                <q-input
+                  v-model="inviteCode"
+                  placeholder="Paste Hub Code Here"
+                  dark
+                  outlined
+                  dense
+                  class="premium-input-glass"
+                  :rules="[(val) => !!val || 'Invite code is required']"
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="vpn_key" color="cyan" size="20px" />
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="auth-input-group">
+                <span class="input-label">Galaxy Role</span>
+                <q-select
+                  v-model="requestedRole"
+                  :options="roleOptions"
+                  dark
+                  outlined
+                  dense
+                  class="premium-input-glass"
+                  emit-value
+                  map-options
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="military_tech" color="cyan" size="20px" />
+                  </template>
+                </q-select>
+              </div>
+            </template>
+
             <div class="auth-input-group">
               <span class="input-label">Security Key (Password)</span>
               <q-input
@@ -85,27 +167,9 @@
               </q-input>
             </div>
 
-            <div class="auth-input-group">
-              <span class="input-label">Galaxy Role</span>
-              <q-select
-                v-model="requestedRole"
-                :options="roleOptions"
-                dark
-                outlined
-                dense
-                class="premium-input-glass"
-                emit-value
-                map-options
-              >
-                <template v-slot:prepend>
-                  <q-icon name="military_tech" color="cyan" size="20px" />
-                </template>
-              </q-select>
-            </div>
-
             <div class="q-pt-md">
               <q-btn
-                label="Launch Profile"
+                :label="registrationType === 'create' ? 'Initialize Hub' : 'Launch Profile'"
                 type="submit"
                 unelevated
                 class="full-width btn-modern text-weight-bolder"
@@ -134,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { supabase } from 'src/boot/supabase'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
@@ -148,55 +212,51 @@ const router = useRouter()
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const registrationType = ref('join') // 'join' or 'create'
+const instituteName = ref('')
+const inviteCode = ref('')
 const requestedRole = ref('student')
-const roleOptions = ref([
+
+const roleOptions = [
   { label: 'Explorer (Student)', value: 'student' },
   { label: 'Commander (Teacher)', value: 'teacher' },
-])
+]
+
 const loading = ref(false)
-
-async function checkAdminStatus() {
-  try {
-    const { count, error } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'admin')
-
-    if (!error && count === 0) {
-      // Add Admin option if no admins exist
-      roleOptions.value.unshift({ label: 'Galaxy Administrator (Host)', value: 'admin' })
-      requestedRole.value = 'admin'
-    }
-  } catch {
-    console.warn('Could not verify admin status, defaulting to restricted roles.')
-  }
-}
-
-onMounted(() => {
-  checkAdminStatus()
-})
 
 async function handleRegister() {
   loading.value = true
   try {
+    const signupMetadata = {
+      full_name: name.value,
+      role:
+        registrationType.value === 'create'
+          ? 'admin'
+          : requestedRole.value.value || requestedRole.value,
+    }
+
+    if (registrationType.value === 'create') {
+      if (!instituteName.value) throw new Error('Institute name is required')
+      signupMetadata.institute_name = instituteName.value
+    } else {
+      if (!inviteCode.value) throw new Error('Invite code is required')
+      signupMetadata.invite_code = inviteCode.value.toUpperCase().trim()
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
       options: {
-        data: {
-          full_name: name.value,
-          role: requestedRole.value.value || requestedRole.value,
-        },
+        data: signupMetadata,
       },
     })
 
     if (error) throw error
 
-    // If auto-login is enabled in Supabase settings, data.session will exist
     if (data.session) {
       $q.notify({
         color: 'positive',
-        message: 'Account created and synchronized! Welcome to Nebula.',
+        message: 'Hub Access Granted! Welcome to Nebula.',
         icon: 'verified_user',
         position: 'top',
       })
