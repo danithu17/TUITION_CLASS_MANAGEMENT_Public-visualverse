@@ -33,30 +33,18 @@
           </q-card-section>
 
           <q-form @submit="handleRegister" class="q-gutter-y-md q-mt-md">
-            <!-- Registration Type Selection -->
-            <div class="row q-col-gutter-sm q-mb-md">
-              <div class="col-6">
-                <q-btn
-                  :flat="registrationType !== 'join'"
-                  :unelevated="registrationType === 'join'"
-                  :color="registrationType === 'join' ? 'primary' : 'grey-8'"
-                  label="Join Hub"
-                  class="full-width rounded-borders-12"
-                  no-caps
-                  @click="registrationType = 'join'"
-                />
+            <!-- Context Header -->
+            <div class="text-center q-mb-md">
+              <div class="text-h6 text-weight-bold text-white text-uppercase letter-spacing-1">
+                {{ registrationType === 'join' ? 'Join Academic Hub' : 'Initialize New Hub' }}
               </div>
-              <div class="col-6">
-                <q-btn
-                  :flat="registrationType !== 'create'"
-                  :unelevated="registrationType === 'create'"
-                  :color="registrationType === 'create' ? 'primary' : 'grey-8'"
-                  label="Create Hub"
-                  class="full-width rounded-borders-12"
-                  no-caps
-                  @click="registrationType = 'create'"
-                />
-              </div>
+              <p class="text-caption text-grey-5 q-mb-none">
+                {{
+                  registrationType === 'join'
+                    ? 'Enter invite code to sync with your class.'
+                    : 'Create a private workspace for your institute.'
+                }}
+              </p>
             </div>
 
             <div class="auth-input-group">
@@ -179,6 +167,35 @@
           </q-form>
 
           <div class="text-center q-mt-lg">
+            <template v-if="registrationType === 'join'">
+              <p class="text-grey-6 text-caption q-mb-sm">
+                Are you a Tutor?
+                <q-btn
+                  flat
+                  no-caps
+                  label="Create your own Hub"
+                  color="cyan"
+                  dense
+                  class="text-weight-bold"
+                  @click="registrationType = 'create'"
+                />
+              </p>
+            </template>
+            <template v-else>
+              <p class="text-grey-6 text-caption q-mb-sm">
+                Have an Invite Code?
+                <q-btn
+                  flat
+                  no-caps
+                  label="Join an existing Hub"
+                  color="cyan"
+                  dense
+                  class="text-weight-bold"
+                  @click="registrationType = 'join'"
+                />
+              </p>
+            </template>
+
             <p class="text-grey-6 text-caption">
               Already registered in the galaxy?
               <q-btn
