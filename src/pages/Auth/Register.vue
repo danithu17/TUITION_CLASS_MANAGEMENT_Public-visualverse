@@ -6,13 +6,13 @@
     <div class="floating-orb orb-2"></div>
 
     <!-- Back to Home Button -->
-    <div class="absolute-top-left q-ma-lg z-top back-btn-container">
+    <div class="absolute-top-left q-pa-md z-top back-btn-container">
       <q-btn
         flat
         no-caps
         color="white"
         icon="arrow_back"
-        label="Back to Home"
+        :label="$q.screen.gt.xs ? 'Back to Home' : ''"
         class="glass-btn-sm"
         to="/"
       />
@@ -501,7 +501,19 @@ async function handleRegister() {
 
 @media (max-width: 599px) {
   .back-btn-container {
-    margin-top: 45px !important;
+    padding-top: 30px !important;
+    padding-left: 20px !important;
+  }
+  .auth-container {
+    padding-top: 80px;
+    min-height: auto;
+  }
+  .auth-card {
+    padding: 24px !important;
+    border-radius: 30px !important;
+  }
+  .brand-text {
+    font-size: 1.8rem;
   }
 }
 </style>
