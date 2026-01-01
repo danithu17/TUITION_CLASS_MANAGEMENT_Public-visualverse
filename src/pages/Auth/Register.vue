@@ -501,11 +501,12 @@ async function handleRegister() {
 
 @media (max-width: 599px) {
   .back-btn-container {
-    padding-top: 30px !important;
-    padding-left: 20px !important;
+    padding-top: 20px !important;
+    padding-left: 15px !important;
   }
   .auth-container {
-    padding-top: 80px;
+    padding-top: 100px;
+    padding-bottom: 40px;
     min-height: auto;
   }
   .auth-card {
