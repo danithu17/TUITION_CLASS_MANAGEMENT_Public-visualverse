@@ -38,7 +38,7 @@ export default defineConfig((ctx) => {
         node: 'node20',
       },
 
-      vueRouterMode: 'history', // available values: '', 'history'
+      vueRouterMode: ctx.mode.capacitor || ctx.mode.cordova ? 'hash' : 'history', // available values: '', 'history'
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,

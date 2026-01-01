@@ -6,7 +6,7 @@
     <div class="floating-orb orb-2"></div>
 
     <!-- Back to Home Button -->
-    <div class="absolute-top-left q-ma-lg z-top">
+    <div class="absolute-top-left q-ma-lg z-top back-btn-container">
       <q-btn
         flat
         no-caps
@@ -496,6 +496,12 @@ async function handleRegister() {
   &:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     transform: translateX(-5px);
+  }
+}
+
+@media (max-width: 599px) {
+  .back-btn-container {
+    margin-top: 45px !important;
   }
 }
 </style>

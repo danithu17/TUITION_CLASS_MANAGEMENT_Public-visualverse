@@ -6,7 +6,7 @@
     <div class="floating-orb orb-2"></div>
 
     <!-- Back to Home Button -->
-    <div class="absolute-top-left q-ma-lg z-top">
+    <div class="absolute-top-left q-ma-lg z-top back-btn-container">
       <q-btn
         flat
         no-caps
@@ -26,7 +26,9 @@
               <q-icon name="auto_stories" color="primary" size="64px" class="animate-pulse" />
             </div>
             <div class="brand-text text-weight-bolder text-white">NEBULA</div>
-            <div class="subtitle text-primary text-weight-bold text-uppercase">Galaxy IQ Ecosystem</div>
+            <div class="subtitle text-primary text-weight-bold text-uppercase">
+              Galaxy IQ Ecosystem
+            </div>
             <p class="text-grey-5 q-mt-sm">Your portal to educational excellence awaits</p>
           </q-card-section>
 
@@ -40,7 +42,7 @@
                 outlined
                 dense
                 class="premium-input-glass"
-                :rules="[val => !!val || 'Email is required']"
+                :rules="[(val) => !!val || 'Email is required']"
               >
                 <template v-slot:prepend>
                   <q-icon name="alternate_email" color="cyan" size="20px" />
@@ -58,7 +60,7 @@
                 dense
                 type="password"
                 class="premium-input-glass"
-                :rules="[val => !!val || 'Password is required']"
+                :rules="[(val) => !!val || 'Password is required']"
               >
                 <template v-slot:prepend>
                   <q-icon name="lock_open" color="cyan" size="20px" />
@@ -77,8 +79,20 @@
             </div>
           </q-form>
           <div class="row justify-between items-center q-pt-sm q-mb-lg">
-            <q-checkbox v-model="rememberMe" label="Persist Session" dark dense class="text-grey-5 text-caption" />
-            <q-btn flat no-caps label="Lost Access?" color="primary" class="text-caption hover-glow-text" />
+            <q-checkbox
+              v-model="rememberMe"
+              label="Persist Session"
+              dark
+              dense
+              class="text-grey-5 text-caption"
+            />
+            <q-btn
+              flat
+              no-caps
+              label="Lost Access?"
+              color="primary"
+              class="text-caption hover-glow-text"
+            />
           </div>
 
           <q-separator dark class="q-my-md opacity-05" />
@@ -86,7 +100,14 @@
           <div class="text-center q-pt-sm">
             <p class="text-grey-6 text-caption">
               New to the Galaxy?
-              <q-btn flat no-caps label="Join Ecosystem" color="primary" class="text-weight-bold hover-glow-text" to="/register" />
+              <q-btn
+                flat
+                no-caps
+                label="Join Ecosystem"
+                color="primary"
+                class="text-weight-bold hover-glow-text"
+                to="/register"
+              />
             </p>
           </div>
         </q-card>
@@ -107,7 +128,7 @@ import { useQuasar } from 'quasar'
 
 // Setting name to satisfy ESLint multi-word component rule
 defineOptions({
-  name: 'LoginPage'
+  name: 'LoginPage',
 })
 
 const $q = useQuasar()
@@ -136,7 +157,7 @@ async function handleLogin() {
       color: 'positive',
       message: 'Authentication successful. Welcome Commander.',
       icon: 'verified_user',
-      position: 'top'
+      position: 'top',
     })
     router.push('/dashboard')
   } catch (error) {
@@ -147,7 +168,7 @@ async function handleLogin() {
       caption: error.status === 400 ? 'Please check your credentials or confirm your email.' : '',
       icon: 'security_update_warning',
       position: 'top',
-      timeout: 5000
+      timeout: 5000,
     })
   } finally {
     loading.value = false
@@ -163,9 +184,13 @@ async function handleLogin() {
 
 .auth-mesh-bg {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
-              radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
   z-index: 0;
 }
 
@@ -179,21 +204,29 @@ async function handleLogin() {
 }
 
 .orb-1 {
-  width: 400px; height: 400px;
+  width: 400px;
+  height: 400px;
   background: #06b6d4;
-  top: -100px; right: -50px;
+  top: -100px;
+  right: -50px;
 }
 
 .orb-2 {
-  width: 300px; height: 300px;
+  width: 300px;
+  height: 300px;
   background: #3b82f6;
-  bottom: -50px; left: -50px;
+  bottom: -50px;
+  left: -50px;
   animation-delay: -5s;
 }
 
 @keyframes float-slow {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(50px, 30px) scale(1.1); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(50px, 30px) scale(1.1);
+  }
 }
 
 .auth-card-container {
@@ -243,9 +276,21 @@ async function handleLogin() {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5)); }
-  50% { transform: scale(1.05); opacity: 0.8; filter: drop-shadow(0 0 15px rgba(6, 242, 254, 0.8)); }
-  100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5)); }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5));
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 15px rgba(6, 242, 254, 0.8));
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5));
+  }
 }
 
 .animate-pulse {
@@ -266,7 +311,9 @@ async function handleLogin() {
 
     &:hover {
       background: rgba(255, 255, 255, 0.05) !important;
-      &::before { border-color: rgba(255, 255, 255, 0.2); }
+      &::before {
+        border-color: rgba(255, 255, 255, 0.2);
+      }
     }
   }
 
@@ -304,11 +351,19 @@ async function handleLogin() {
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.z-top { z-index: 10; }
+.z-top {
+  z-index: 10;
+}
 
 .glass-btn-sm {
   background: rgba(255, 255, 255, 0.05) !important;
@@ -321,6 +376,12 @@ async function handleLogin() {
   &:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     transform: translateX(-5px);
+  }
+}
+
+@media (max-width: 599px) {
+  .back-btn-container {
+    margin-top: 45px !important;
   }
 }
 </style>

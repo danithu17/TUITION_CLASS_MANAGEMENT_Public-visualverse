@@ -1,0 +1,13 @@
+{
+  "name": "tution-class-management",
+  "version": "0.0.1",
+  "description": "A Quasar Project",
+  "author": "Visualverse",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header reveal class="bg-glass-dark text-white" height-hint="64">
+    <q-header v-if="!isAuthPage" reveal class="bg-glass-dark text-white" height-hint="64">
       <q-toolbar class="q-px-sm q-px-md-md">
         <q-btn
           flat
@@ -12,15 +12,19 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title class="cursor-pointer" @click="scrollTo('home')" style="min-width: 140px">
+        <q-toolbar-title class="cursor-pointer" @click="scrollTo('home')" style="min-width: 120px">
           <div class="row no-wrap items-center">
-            <q-icon name="auto_stories" color="primary" size="26px" class="q-mr-sm" />
+            <q-icon name="auto_stories" color="primary" size="24px" class="q-mr-sm" />
             <div class="column justify-center">
               <div class="row items-center no-wrap">
-                <span class="text-gradient text-weight-bolder" style="font-size: 1.2rem; line-height: 1; letter-spacing: 1px;">NEBULA</span>
-                <q-badge outline color="primary" label="2026" class="q-ml-xs" style="font-size: 8px; padding: 2px 4px;" />
+                <span class="text-gradient text-weight-bolder brand-text">NEBULA</span>
+                <q-badge outline color="primary" label="2026" class="q-ml-xs brand-badge" />
               </div>
-              <span class="text-grey-5 text-weight-medium text-uppercase" style="font-size: 9px; line-height: 1.2; letter-spacing: 0.5px;">Management System</span>
+              <span
+                class="text-grey-5 text-weight-medium text-uppercase gt-xs"
+                style="font-size: 9px; line-height: 1.2; letter-spacing: 0.5px"
+                >Management System</span
+              >
             </div>
           </div>
         </q-toolbar-title>
@@ -28,38 +32,95 @@
         <q-space />
 
         <div class="gt-sm q-gutter-md">
-          <q-btn flat no-caps label="Home" class="btn-modern link-btn text-grey-3" color="primary" @click="router.push('/')" />
-          <q-btn v-if="currentUser" flat no-caps label="Dashboard" class="btn-modern link-btn text-primary text-weight-bolder" @click="router.push('/dashboard')" />
-          <q-btn flat no-caps label="Features" class="btn-modern link-btn text-grey-3" @click="scrollTo('features')" />
-          <q-btn flat no-caps label="Open Source" class="btn-modern link-btn text-grey-3" @click="scrollTo('opensource')" />
-          <q-btn flat no-caps label="FAQ" class="btn-modern link-btn text-grey-3" @click="scrollTo('faq')" />
+          <q-btn
+            flat
+            no-caps
+            label="Home"
+            class="btn-modern link-btn text-grey-3"
+            color="primary"
+            @click="router.push('/')"
+          />
+          <q-btn
+            v-if="currentUser"
+            flat
+            no-caps
+            label="Dashboard"
+            class="btn-modern link-btn text-primary text-weight-bolder"
+            @click="router.push('/dashboard')"
+          />
+          <q-btn
+            flat
+            no-caps
+            label="Features"
+            class="btn-modern link-btn text-grey-3"
+            @click="scrollTo('features')"
+          />
+          <q-btn
+            flat
+            no-caps
+            label="Open Source"
+            class="btn-modern link-btn text-grey-3"
+            @click="scrollTo('opensource')"
+          />
+          <q-btn
+            flat
+            no-caps
+            label="FAQ"
+            class="btn-modern link-btn text-grey-3"
+            @click="scrollTo('faq')"
+          />
         </div>
 
         <q-separator vertical inset class="q-mx-lg gt-sm" color="grey-9" />
 
         <div class="q-gutter-sm row items-center no-wrap">
           <template v-if="!currentUser">
-            <q-btn flat no-caps label="Login" class="btn-modern link-btn text-white gt-xs" to="/login" />
-            <q-btn unelevated no-caps label="Get Started" class="btn-modern nav-cta-btn" to="/register" />
+            <q-btn
+              flat
+              no-caps
+              label="Login"
+              class="btn-modern link-btn text-white gt-xs"
+              to="/login"
+            />
+            <q-btn
+              unelevated
+              no-caps
+              label="Get Started"
+              class="btn-modern nav-cta-btn"
+              to="/register"
+            />
           </template>
           <template v-else>
             <!-- Notification Bell -->
             <q-btn flat round icon="notifications" class="q-mr-sm text-grey-4">
-              <q-badge v-if="unreadCount > 0" color="negative" floating rounded>{{ unreadCount }}</q-badge>
+              <q-badge v-if="unreadCount > 0" color="negative" floating rounded>{{
+                unreadCount
+              }}</q-badge>
               <q-menu class="bg-glass-ultra text-white border-glow-premium" style="width: 350px">
                 <div class="row items-center justify-between q-pa-md border-bottom-subtle">
                   <div class="text-subtitle2 text-weight-bold">Intelligence Feed</div>
-                  <q-btn flat dense round icon="done_all" size="sm" @click="markAllRead"><q-tooltip>Mark all as read</q-tooltip></q-btn>
+                  <q-btn flat dense round icon="done_all" size="sm" @click="markAllRead"
+                    ><q-tooltip>Mark all as read</q-tooltip></q-btn
+                  >
                 </div>
                 <q-list dark separator class="notifications-list">
-                  <q-item v-for="notif in notifications" :key="notif.id" :class="{'bg-primary-05': !notif.is_read}">
+                  <q-item
+                    v-for="notif in notifications"
+                    :key="notif.id"
+                    :class="{ 'bg-primary-05': !notif.is_read }"
+                  >
                     <q-item-section avatar>
-                      <q-icon :name="notif.type === 'success' ? 'verified' : 'info'" :color="notif.type === 'success' ? 'positive' : 'primary'" />
+                      <q-icon
+                        :name="notif.type === 'success' ? 'verified' : 'info'"
+                        :color="notif.type === 'success' ? 'positive' : 'primary'"
+                      />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label class="text-weight-bold">{{ notif.title }}</q-item-label>
                       <q-item-label caption class="text-grey-4">{{ notif.message }}</q-item-label>
-                      <q-item-label caption class="text-grey-6 text-right">{{ formatTime(notif.created_at) }}</q-item-label>
+                      <q-item-label caption class="text-grey-6 text-right">{{
+                        formatTime(notif.created_at)
+                      }}</q-item-label>
                     </q-item-section>
                   </q-item>
                   <q-item v-if="notifications.length === 0" class="text-center q-pa-lg text-grey-6">
@@ -70,10 +131,24 @@
             </q-btn>
 
             <div class="gt-sm q-mr-md column items-end line-height-1">
-              <div class="text-white text-weight-bold text-uppercase" style="font-size: 11px">{{ userProfile?.full_name || currentUser.email.split('@')[0] }}</div>
-              <div class="text-primary text-weight-medium text-uppercase" style="font-size: 9px; letter-spacing: 1px">{{ userProfile?.role || 'User' }}</div>
+              <div class="text-white text-weight-bold text-uppercase" style="font-size: 11px">
+                {{ userProfile?.full_name || currentUser.email.split('@')[0] }}
+              </div>
+              <div
+                class="text-primary text-weight-medium text-uppercase"
+                style="font-size: 9px; letter-spacing: 1px"
+              >
+                {{ userProfile?.role || 'User' }}
+              </div>
             </div>
-            <q-btn unelevated no-caps icon="logout" color="negative" class="btn-modern flat shadow-none" @click="handleLogout">
+            <q-btn
+              unelevated
+              no-caps
+              icon="logout"
+              color="negative"
+              class="btn-modern flat shadow-none"
+              @click="handleLogout"
+            >
               <q-tooltip>Sign Out</q-tooltip>
             </q-btn>
           </template>
@@ -93,7 +168,9 @@
           <q-icon name="person_outline" color="primary" size="60px" />
         </q-avatar>
         <div class="text-h6 text-weight-bold">{{ userProfile?.full_name || 'Explorer' }}</div>
-        <q-badge color="primary" outline class="q-mt-xs text-uppercase letter-spacing-1">{{ userProfile?.role || 'Guest' }}</q-badge>
+        <q-badge color="primary" outline class="q-mt-xs text-uppercase letter-spacing-1">{{
+          userProfile?.role || 'Guest'
+        }}</q-badge>
       </div>
 
       <q-list padding class="q-mt-md">
@@ -104,21 +181,35 @@
 
         <!-- Role Specific Links -->
         <template v-if="userProfile?.role === 'admin'">
-          <q-item-label header class="text-grey-6 text-uppercase q-mt-md q-ml-md" style="font-size: 10px; letter-spacing: 2px;">Core Control</q-item-label>
+          <q-item-label
+            header
+            class="text-grey-6 text-uppercase q-mt-md q-ml-md"
+            style="font-size: 10px; letter-spacing: 2px"
+            >Core Control</q-item-label
+          >
           <q-item clickable v-ripple class="drawer-item q-mx-md q-mb-sm">
             <q-item-section avatar><q-icon name="manage_accounts" color="cyan" /></q-item-section>
             <q-item-section>User Governance</q-item-section>
           </q-item>
           <q-item clickable v-ripple class="drawer-item q-mx-md q-mb-sm">
-            <q-item-section avatar><q-icon name="settings_input_component" color="purple" /></q-item-section>
+            <q-item-section avatar
+              ><q-icon name="settings_input_component" color="purple"
+            /></q-item-section>
             <q-item-section>System Params</q-item-section>
           </q-item>
         </template>
 
         <template v-else-if="userProfile?.role === 'teacher'">
-          <q-item-label header class="text-grey-6 text-uppercase q-mt-md q-ml-md" style="font-size: 10px; letter-spacing: 2px;">Faculty Hub</q-item-label>
+          <q-item-label
+            header
+            class="text-grey-6 text-uppercase q-mt-md q-ml-md"
+            style="font-size: 10px; letter-spacing: 2px"
+            >Faculty Hub</q-item-label
+          >
           <q-item clickable v-ripple class="drawer-item q-mx-md q-mb-sm">
-            <q-item-section avatar><q-icon name="collections_bookmark" color="cyan" /></q-item-section>
+            <q-item-section avatar
+              ><q-icon name="collections_bookmark" color="cyan"
+            /></q-item-section>
             <q-item-section>My Subjects</q-item-section>
           </q-item>
           <q-item clickable v-ripple class="drawer-item q-mx-md q-mb-sm">
@@ -128,7 +219,12 @@
         </template>
 
         <template v-else-if="userProfile?.role === 'student'">
-          <q-item-label header class="text-grey-6 text-uppercase q-mt-md q-ml-md" style="font-size: 10px; letter-spacing: 2px;">My Learning</q-item-label>
+          <q-item-label
+            header
+            class="text-grey-6 text-uppercase q-mt-md q-ml-md"
+            style="font-size: 10px; letter-spacing: 2px"
+            >My Learning</q-item-label
+          >
           <q-item clickable v-ripple class="drawer-item q-mx-md q-mb-sm">
             <q-item-section avatar><q-icon name="school" color="cyan" /></q-item-section>
             <q-item-section>Enrolled Courses</q-item-section>
@@ -161,14 +257,14 @@
       <router-view />
     </q-page-container>
 
-    <footer class="bg-dark text-white q-pa-lg q-pa-md-xl">
+    <footer v-if="!isAuthPage" class="bg-dark text-white q-pa-lg q-pa-md-xl">
       <div class="row q-col-gutter-xl justify-center">
         <div class="col-12 col-md-4">
           <div class="text-h6 text-gradient q-mb-md">Nebula</div>
           <p class="text-grey-5 leading-relaxed">
-            Leading the digital transformation in education. Visualverse specializes in
-            crafting high-performance, open-source solutions that empower educators
-            and institutions worldwide.
+            Leading the digital transformation in education. Visualverse specializes in crafting
+            high-performance, open-source solutions that empower educators and institutions
+            worldwide.
           </p>
         </div>
         <div class="col-12 col-sm-6 col-md-3">
@@ -176,7 +272,9 @@
           <div class="q-gutter-y-sm">
             <div class="row items-center text-grey-5 no-wrap">
               <q-icon name="mail" class="q-mr-sm" color="primary" />
-              <a href="mailto:dnprog1@gmail.com" class="text-grey-5 text-decoration-none text-break">dnprog1@gmail.com</a>
+              <a href="mailto:dnprog1@gmail.com" class="text-grey-5 text-decoration-none text-break"
+                >dnprog1@gmail.com</a
+              >
             </div>
             <div class="row items-center text-grey-5">
               <q-icon name="public" class="q-mr-sm" color="primary" />
@@ -187,15 +285,19 @@
         <div class="col-12 col-sm-6 col-md-3">
           <div class="text-subtitle1 text-weight-bold q-mb-md text-primary">Legal</div>
           <div class="q-gutter-y-sm">
-            <div class="text-grey-5 cursor-pointer hover-text-white transition-03">Privacy Policy</div>
-            <div class="text-grey-5 cursor-pointer hover-text-white transition-03">Terms of Service</div>
+            <div class="text-grey-5 cursor-pointer hover-text-white transition-03">
+              Privacy Policy
+            </div>
+            <div class="text-grey-5 cursor-pointer hover-text-white transition-03">
+              Terms of Service
+            </div>
           </div>
         </div>
       </div>
       <q-separator dark class="q-my-xl" style="opacity: 0.05" />
       <div class="text-center text-grey-6 text-caption">
         © 2026 <span class="text-weight-bold text-grey-4">Visualverse</span>. All rights reserved.
-        <br>
+        <br />
         Handcrafted for modern educators.
       </div>
     </footer>
@@ -214,14 +316,11 @@ const leftDrawerOpen = ref(false)
 const currentUser = ref(null)
 const userProfile = ref(null)
 const notifications = ref([])
-const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
+const unreadCount = computed(() => notifications.value.filter((n) => !n.is_read).length)
+const isAuthPage = computed(() => ['/login', '/register'].includes(router.currentRoute.value.path))
 
 async function fetchProfile(userId) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
 
   if (!error) {
     userProfile.value = data
@@ -254,7 +353,9 @@ function formatTime(dateStr) {
 }
 
 onMounted(async () => {
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
   currentUser.value = session?.user || null
   if (currentUser.value) {
     fetchProfile(currentUser.value.id)
@@ -265,16 +366,21 @@ onMounted(async () => {
       .channel('schema-db-changes')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.value.id}` },
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${currentUser.value.id}`,
+        },
         () => {
           fetchNotifications()
           $q.notify({
             icon: 'notifications_active',
             message: 'New Intelligence Feed Received!',
             color: 'primary',
-            position: 'bottom-right'
+            position: 'bottom-right',
           })
-        }
+        },
       )
       .subscribe()
   }
@@ -291,7 +397,7 @@ onMounted(async () => {
   })
 })
 
-function toggleLeftDrawer () {
+function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
@@ -309,7 +415,7 @@ async function handleLogout() {
     $q.notify({
       color: 'info',
       message: 'Securely logged out. See you soon!',
-      icon: 'sync_alt'
+      icon: 'sync_alt',
     })
     router.push('/')
   }
@@ -332,11 +438,42 @@ async function handleLogout() {
   transform: translateX(-50%) !important;
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
 
   &.q-header--hidden {
-    transform: translateX(-50%) translateY(-150%) !important;
+    transform: translateX(-50%) translateY(-200%) !important;
     opacity: 0;
   }
+}
+
+@media (max-width: 599px) {
+  .bg-glass-dark {
+    margin: 38px 12px 0 12px !important;
+    width: calc(100% - 24px) !important;
+    border-radius: 15px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .brand-text {
+    font-size: 1rem !important;
+  }
+
+  .brand-badge {
+    font-size: 7px !important;
+    padding: 1px 3px !important;
+  }
+}
+
+.brand-text {
+  font-size: 1.2rem;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.brand-badge {
+  font-size: 8px;
+  padding: 2px 4px;
 }
 
 .link-btn {
