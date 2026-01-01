@@ -26,7 +26,9 @@
               <q-icon name="auto_stories" color="primary" size="64px" class="animate-pulse" />
             </div>
             <div class="brand-text text-weight-bolder text-white">NEBULA</div>
-            <div class="subtitle text-primary text-weight-bold text-uppercase">Galaxy IQ Ecosystem</div>
+            <div class="subtitle text-primary text-weight-bold text-uppercase">
+              Galaxy IQ Ecosystem
+            </div>
             <p class="text-grey-5 q-mt-sm">Join the next generation of interstellar learning</p>
           </q-card-section>
 
@@ -40,7 +42,7 @@
                 outlined
                 dense
                 class="premium-input-glass"
-                :rules="[val => !!val || 'Name is required']"
+                :rules="[(val) => !!val || 'Name is required']"
               >
                 <template v-slot:prepend>
                   <q-icon name="person_outline" color="cyan" size="20px" />
@@ -57,7 +59,7 @@
                 outlined
                 dense
                 class="premium-input-glass"
-                :rules="[val => !!val || 'Email is required']"
+                :rules="[(val) => !!val || 'Email is required']"
               >
                 <template v-slot:prepend>
                   <q-icon name="alternate_email" color="cyan" size="20px" />
@@ -75,7 +77,7 @@
                 dense
                 type="password"
                 class="premium-input-glass"
-                :rules="[val => val && val.length >= 6 || 'Minimum 6 characters']"
+                :rules="[(val) => (val && val.length >= 6) || 'Minimum 6 characters']"
               >
                 <template v-slot:prepend>
                   <q-icon name="lock_open" color="cyan" size="20px" />
@@ -115,7 +117,14 @@
           <div class="text-center q-mt-lg">
             <p class="text-grey-6 text-caption">
               Already registered in the galaxy?
-              <q-btn flat no-caps label="Return to Portal" color="primary" class="text-weight-bold hover-glow-text" to="/login" />
+              <q-btn
+                flat
+                no-caps
+                label="Return to Portal"
+                color="primary"
+                class="text-weight-bold hover-glow-text"
+                to="/login"
+              />
             </p>
           </div>
         </q-card>
@@ -125,13 +134,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { supabase } from 'src/boot/supabase'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
 defineOptions({
-  name: 'RegisterPage'
+  name: 'RegisterPage',
 })
 
 const $q = useQuasar()
@@ -140,11 +149,32 @@ const name = ref('')
 const email = ref('')
 const password = ref('')
 const requestedRole = ref('student')
-const roleOptions = [
+const roleOptions = ref([
   { label: 'Explorer (Student)', value: 'student' },
-  { label: 'Commander (Teacher)', value: 'teacher' }
-]
+  { label: 'Commander (Teacher)', value: 'teacher' },
+])
 const loading = ref(false)
+
+async function checkAdminStatus() {
+  try {
+    const { count, error } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'admin')
+
+    if (!error && count === 0) {
+      // Add Admin option if no admins exist
+      roleOptions.value.unshift({ label: 'Galaxy Administrator (Host)', value: 'admin' })
+      requestedRole.value = 'admin'
+    }
+  } catch (err) {
+    console.warn('Could not verify admin status, defaulting to restricted roles.')
+  }
+}
+
+onMounted(() => {
+  checkAdminStatus()
+})
 
 async function handleRegister() {
   loading.value = true
@@ -155,9 +185,9 @@ async function handleRegister() {
       options: {
         data: {
           full_name: name.value,
-          role: requestedRole.value.value || requestedRole.value
-        }
-      }
+          role: requestedRole.value.value || requestedRole.value,
+        },
+      },
     })
 
     if (error) throw error
@@ -168,7 +198,7 @@ async function handleRegister() {
         color: 'positive',
         message: 'Account created and synchronized! Welcome to Nebula.',
         icon: 'verified_user',
-        position: 'top'
+        position: 'top',
       })
       router.push('/dashboard')
     } else {
@@ -177,7 +207,7 @@ async function handleRegister() {
         message: 'Registration successful! Please check your email for confirmation.',
         icon: 'mark_email_read',
         position: 'top',
-        timeout: 10000
+        timeout: 10000,
       })
       router.push('/login')
     }
@@ -186,7 +216,7 @@ async function handleRegister() {
       color: 'negative',
       message: error.message,
       icon: 'report_problem',
-      position: 'top'
+      position: 'top',
     })
   } finally {
     loading.value = false
@@ -203,9 +233,13 @@ async function handleRegister() {
 
 .auth-mesh-bg {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
-              radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
   z-index: 0;
 }
 
@@ -219,21 +253,29 @@ async function handleRegister() {
 }
 
 .orb-1 {
-  width: 400px; height: 400px;
+  width: 400px;
+  height: 400px;
   background: #06b6d4;
-  top: -100px; right: -50px;
+  top: -100px;
+  right: -50px;
 }
 
 .orb-2 {
-  width: 300px; height: 300px;
+  width: 300px;
+  height: 300px;
   background: #3b82f6;
-  bottom: -50px; left: -50px;
+  bottom: -50px;
+  left: -50px;
   animation-delay: -5s;
 }
 
 @keyframes float-slow {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(50px, 30px) scale(1.1); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(50px, 30px) scale(1.1);
+  }
 }
 
 // Styles
@@ -278,9 +320,21 @@ async function handleRegister() {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5)); }
-  50% { transform: scale(1.05); opacity: 0.8; filter: drop-shadow(0 0 15px rgba(6, 242, 254, 0.8)); }
-  100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5)); }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5));
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 15px rgba(6, 242, 254, 0.8));
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(6, 242, 254, 0.5));
+  }
 }
 
 .animate-pulse {
@@ -295,10 +349,14 @@ async function handleRegister() {
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     height: 56px;
 
-    &::before { border-color: rgba(255, 255, 255, 0.1); }
+    &::before {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
     &:hover {
       background: rgba(255, 255, 255, 0.05) !important;
-      &::before { border-color: rgba(255, 255, 255, 0.2); }
+      &::before {
+        border-color: rgba(255, 255, 255, 0.2);
+      }
     }
   }
 
@@ -336,11 +394,19 @@ async function handleRegister() {
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.z-top { z-index: 10; }
+.z-top {
+  z-index: 10;
+}
 
 .glass-btn-sm {
   background: rgba(255, 255, 255, 0.05) !important;
