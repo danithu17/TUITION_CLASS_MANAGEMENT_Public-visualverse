@@ -40,4 +40,8 @@ quasar build
 
 ### Customize the configuration
 
+LINK to the application
+
+https://tuto-j14qp8r04-dnprog1gmailcoms-projects.vercel.app/login
+
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
