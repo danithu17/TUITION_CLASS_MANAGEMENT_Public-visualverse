@@ -167,7 +167,7 @@ async function checkAdminStatus() {
       roleOptions.value.unshift({ label: 'Galaxy Administrator (Host)', value: 'admin' })
       requestedRole.value = 'admin'
     }
-  } catch (err) {
+  } catch {
     console.warn('Could not verify admin status, defaulting to restricted roles.')
   }
 }
