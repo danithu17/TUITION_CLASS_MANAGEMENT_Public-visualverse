@@ -92,7 +92,7 @@ export default defineConfig((ctx) => {
     devServer: {
       // https: true,
       host: '0.0.0.0',
-      port: 8080,
+      port: 9501,
       open: true, // opens browser window automatically
     },
 
